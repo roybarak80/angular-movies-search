@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError, shareReplay } from 'rxjs/operators';
 import { environment } from '../enviroments/enviroment';
@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 export class MovieService {
   private apiUrl = environment.apiUrl
   private apiKey = environment.apiKey // Replace with your API key
+  private apiAuth = environment.authorization;
   private queryCache = new Map<string, Observable<any[]>>(); // Cache for observables
 
   constructor(private http: HttpClient, private dialog: MatDialog) {}
@@ -25,16 +26,26 @@ export class MovieService {
       return cachedQuery; // Return the cached observable
     }
 
+    const headers = new HttpHeaders({
+      accept: 'application/json',
+      Authorization: `${this.apiAuth}`,
+    });
+
     // Make an API call and cache the result
+
     const apiCall$ = this.http
-      .get<any>(`${this.apiUrl}?api_key=${this.apiKey}&query=${query}`)
+      .get<any>(`${this.apiUrl}/search/movie?api_key=${this.apiKey}?&query=${query}`, {
+        headers,
+        observe: 'response', // Observe the full response to handle status codes
+      })
       .pipe(
         map((response) => {
           if (response.status === 204 || !response.body || !response.body.results) {
             // Treat 204 or empty body as an error-like case
             throw new Error('No results found.');
           }
-          return response.results}), // Extract results
+          return response.body.results; // Correctly access the results
+        }), // Extract results
         catchError((error) => {
           this.handleError(error); // Trigger the dialog
           return of([]); // Fallback to an empty array

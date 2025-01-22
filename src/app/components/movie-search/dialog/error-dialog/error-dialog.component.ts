@@ -1,11 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import {MatButtonModule} from '@angular/material/button';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {MatButtonModule} from '@angular/material/button';
 
 @Component({
   selector: 'app-error-dialog',
-  imports: [MatDialogModule],
+  imports: [MatDialogModule, MatButtonModule],
   template: `
   <mat-dialog-content class="mat-typography">
     <h1 mat-dialog-title>Error</h1>
